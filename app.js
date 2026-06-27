@@ -366,8 +366,28 @@ function openDetailModal(app) {
   modalRating.textContent = app.rating.toFixed(1);
   modalTitle.textContent = app.title;
   modalDesc.textContent = app.description;
-  modalBtnLaunch.href = app.appUrl;
-  
+
+  // 🔐 보호된 앱: 버튼처럼 동작 (Daily Token 포함 URL 생성)
+  // 일반 앱: 기존 href 방식 유지
+  if (app.protected) {
+    modalBtnLaunch.removeAttribute('href');
+    modalBtnLaunch.style.cursor = 'pointer';
+    // 기존 이벤트 리스너 제거 후 재등록 (중복 방지)
+    const newBtn = modalBtnLaunch.cloneNode(true);
+    modalBtnLaunch.parentNode.replaceChild(newBtn, modalBtnLaunch);
+    // modalBtnLaunch 참조 갱신
+    const refreshedBtn = document.getElementById('modal-btn-launch');
+    refreshedBtn.addEventListener('click', (e) => {
+      e.preventDefault();
+      closeDetailModal();
+      openProtectedApp(app.appUrl);
+    });
+  } else {
+    modalBtnLaunch.href = app.appUrl;
+    modalBtnLaunch.target = '_blank';
+    modalBtnLaunch.rel = 'noopener noreferrer';
+  }
+
   // 태그 렌더링
   modalTags.innerHTML = app.tags.map(tag => `<span class="app-tag">${tag}</span>`).join('');
   
