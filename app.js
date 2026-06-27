@@ -52,6 +52,13 @@ const modalBtnLaunch = document.getElementById('modal-btn-launch');
 const modalBtnCloseTop = document.getElementById('modal-btn-close-top');
 const modalBtnCloseBottom = document.getElementById('modal-btn-close-bottom');
 
+// 이용약관 & 개인정보처리방침 모달 (Dialog)
+const termsModal = document.getElementById('terms-modal');
+const privacyModal = document.getElementById('privacy-modal');
+const btnCloseTerms = document.getElementById('btn-close-terms');
+const btnClosePrivacy = document.getElementById('btn-close-privacy');
+
+
 
 // ==========================================
 // 3. 비즈니스 로직 & 모킹 서비스 (Service Layer)
@@ -338,24 +345,40 @@ function initModalDismiss() {
     btn.addEventListener('click', closeDetailModal);
   });
 
+  // 이용약관 & 개인정보처리방침 트리거 및 닫기 이벤트 등록
+  document.querySelectorAll('.btn-terms-trigger').forEach(btn => {
+    btn.addEventListener('click', () => termsModal.showModal());
+  });
+  document.querySelectorAll('.btn-privacy-trigger').forEach(btn => {
+    btn.addEventListener('click', () => privacyModal.showModal());
+  });
+  btnCloseTerms.addEventListener('click', () => termsModal.close());
+  btnClosePrivacy.addEventListener('click', () => privacyModal.close());
+
   // closedby="any" 미지원 브라우저(대표적으로 Safari) 대응용 폴백 구현
-  if (!('closedBy' in HTMLDialogElement.prototype)) {
-    appDetailModal.addEventListener('click', (event) => {
-      if (event.target !== appDetailModal) return;
+  const setupLightDismiss = (dialogEl) => {
+    if (!('closedBy' in HTMLDialogElement.prototype)) {
+      dialogEl.addEventListener('click', (event) => {
+        if (event.target !== dialogEl) return;
 
-      const rect = appDetailModal.getBoundingClientRect();
-      const isDialogContent = (
-        rect.top <= event.clientY &&
-        event.clientY <= rect.top + rect.height &&
-        rect.left <= event.clientX &&
-        event.clientX <= rect.left + rect.width
-      );
+        const rect = dialogEl.getBoundingClientRect();
+        const isDialogContent = (
+          rect.top <= event.clientY &&
+          event.clientY <= rect.top + rect.height &&
+          rect.left <= event.clientX &&
+          event.clientX <= rect.left + rect.width
+        );
 
-      if (!isDialogContent) {
-        closeDetailModal();
-      }
-    });
-  }
+        if (!isDialogContent) {
+          dialogEl.close();
+        }
+      });
+    }
+  };
+
+  setupLightDismiss(appDetailModal);
+  setupLightDismiss(termsModal);
+  setupLightDismiss(privacyModal);
 }
 
 // GNB 검색 및 카테고리 필터링 초기화
