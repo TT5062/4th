@@ -101,7 +101,8 @@ export const mockAppList = [
     reviews: 167,
     tags: ["#마인드맵", "#브레인스토밍", "#계획표"],
     iconUrl: "fa-solid fa-diagram-project",
-    appUrl: "https://example.com/mind-mapper",
+    appUrl: "https://homework-qk7y.vercel.app/",
+    protected: true,  // 포털을 통해서만 접근 가능 (Daily Token 인증)
     screenshotUrl: "https://images.unsplash.com/photo-1531403009284-440f080d1e12?w=600&auto=format&fit=crop&q=60"
   }
 ];

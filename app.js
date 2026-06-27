@@ -1,6 +1,38 @@
 import { mockAppList } from './data.js';
 
 // ==========================================
+// 🔐 Daily Token 생성기 (SHA-256 기반)
+// 공유 비밀키 + 오늘 날짜로 매일 새로운 토큰 생성
+// 이 키는 마인드맵 앱(homework/app.js)과 반드시 동일해야 합니다.
+// ==========================================
+const PORTAL_SECRET_KEY = 'SJH-EDU-PORTAL-2026-MINDMAP';
+
+async function generateDailyToken() {
+  const today = new Date().toLocaleDateString('ko-KR', {
+    year: 'numeric', month: '2-digit', day: '2-digit',
+    timeZone: 'Asia/Seoul'
+  }).replace(/\. /g, '-').replace('.', ''); // "2026-06-27" 형식
+  const data = PORTAL_SECRET_KEY + ':' + today;
+  const encoder = new TextEncoder();
+  const buffer = await crypto.subtle.digest('SHA-256', encoder.encode(data));
+  const hashArray = Array.from(new Uint8Array(buffer));
+  return hashArray.map(b => b.toString(16).padStart(2, '0')).join('').slice(0, 32);
+}
+
+async function openProtectedApp(baseUrl) {
+  try {
+    const token = await generateDailyToken();
+    const url = new URL(baseUrl);
+    url.searchParams.set('token', token);
+    url.searchParams.set('from', 'edu-portal');
+    window.open(url.toString(), '_blank', 'noopener,noreferrer');
+  } catch (err) {
+    console.error('토큰 생성 오류:', err);
+    alert('접근 토큰 생성에 실패했습니다. 잠시 후 다시 시도해주세요.');
+  }
+}
+
+// ==========================================
 // 1. 상태 정의 (State)
 // ==========================================
 const state = {
@@ -253,9 +285,14 @@ function renderApps() {
       
       <div class="app-card-actions">
         <button class="btn-detail" data-app-id="${app.id}">상세 정보</button>
-        <a class="btn-launch" href="${app.appUrl}" target="_blank" rel="noopener noreferrer">
-          <i class="fa-solid fa-up-right-from-square"></i> 바로가기
-        </a>
+        ${app.protected
+          ? `<button class="btn-launch btn-protected" data-app-id="${app.id}" data-app-url="${app.appUrl}">
+               <i class="fa-solid fa-lock"></i> 바로가기
+             </button>`
+          : `<a class="btn-launch" href="${app.appUrl}" target="_blank" rel="noopener noreferrer">
+               <i class="fa-solid fa-up-right-from-square"></i> 바로가기
+             </a>`
+        }
       </div>
     `;
     
@@ -270,6 +307,13 @@ function renderApps() {
     card.querySelector('.btn-detail').addEventListener('click', () => {
       openDetailModal(app);
     });
+
+    // 🔐 보호된 앱 바로가기 버튼 (Daily Token 방식)
+    if (app.protected) {
+      card.querySelector('.btn-protected').addEventListener('click', () => {
+        openProtectedApp(app.appUrl);
+      });
+    }
     
     appGrid.appendChild(card);
   });
