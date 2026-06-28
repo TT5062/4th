@@ -90,6 +90,9 @@ const privacyModal = document.getElementById('privacy-modal');
 const btnCloseTerms = document.getElementById('btn-close-terms');
 const btnClosePrivacy = document.getElementById('btn-close-privacy');
 
+// 로그아웃 버튼
+const btnLogout = document.getElementById('btn-logout');
+
 
 
 // ==========================================
@@ -475,6 +478,25 @@ document.addEventListener('DOMContentLoaded', () => {
   initOnboardingEvents();
   initFilterEvents();
   initModalDismiss();
+
+  // 로그아웃 버튼
+  btnLogout.addEventListener('click', () => {
+    if (!confirm('로그아웃 하시겠습니까?')) return;
+    localStorage.removeItem('user_session');
+    state.userSession = null;
+    // 입력 필드 및 체크박스 초기화
+    studentIdInput.value = '';
+    studentNameInput.value = '';
+    studentPwInput.value = '';
+    document.querySelectorAll('.ethics-card input[type="checkbox"]').forEach(cb => {
+      cb.checked = false;
+      cb.closest('.ethics-card')?.classList.remove('checked');
+    });
+    btnEnter.disabled = true;
+    // 화면 전환
+    mainDashboardScreen.style.display = 'none';
+    gatewayScreen.style.display = 'flex';
+  });
   
   // 자동 로그인 확인
   if (authService.checkSession()) {
